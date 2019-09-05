@@ -20,7 +20,7 @@ namespace WebAPI.Controllers
 
         [Route("v1/categorias")]
         [HttpGet]
-        public IEnumerable<Categoria> Index()
+        public IEnumerable<Categoria> Get()
         {
             return _context.Categorias.AsNoTracking().ToList();
         }
