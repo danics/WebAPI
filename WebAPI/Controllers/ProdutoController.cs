@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebAPI.Data;
@@ -12,68 +13,40 @@ namespace WebAPI.Controllers
 {
     public class ProdutoController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IProdutoRepositorio _produtoRepositorio;
 
-        public ProdutoController(ApplicationDbContext context)
+        public ProdutoController(IProdutoRepositorio produtoRepositorio)
         {
-            _context = context;
+            _produtoRepositorio = produtoRepositorio;
         }
 
         [Route("v1/produtos")]
         [HttpGet]
         public IEnumerable<ProdutoViewModel> Get()
         {
-            var produtos = _context.Produtos.AsNoTracking().ToList();
-            List<ProdutoViewModel> produtosViewModel = new List<ProdutoViewModel>();
-              foreach(var produto in produtos)
-                {
-                    produtosViewModel.Add(new ProdutoViewModel
-                    {
-                        Id = produto.Id,
-                        Title = produto.Title,
-                        Descricao = produto.Descricao,
-                        Preco = produto.Preco,
-                        Quantidade = produto.Quantidade,
-                        Imagem = produto.Imagem,
-                        CategoriaId = produto.CategoriaId
-                    });
-                }
-            return (produtosViewModel);
+            return _produtoRepositorio.Get();
         }
 
         [Route("v1/produtos/{id}")]
         [HttpGet]
         public Produto Get(int id)
         {
-            return _context.Produtos.AsNoTracking().Where(x => x.Id == id).FirstOrDefault();
+            return _produtoRepositorio.GetById(id);
         }
 
-        [Route("v1/produtos")]
+        [Route("v1/{CategoriaId}/produtos/")]
         [HttpPost]
-        public Produto Post(ProdutoViewModel produtoViewModel)
+        public Produto Post([FromBody]ProdutoViewModel produtoViewModel)
         {
-           var produto = new Produto{
-               Id = produtoViewModel.Id,
-               Title = produtoViewModel.Title,
-               Descricao = produtoViewModel.Descricao,
-               Preco = produtoViewModel.Preco,
-               Quantidade = produtoViewModel.Quantidade,
-               Imagem = produtoViewModel.Imagem,
-               CategoriaId = produtoViewModel.CategoriaId
-           };
-
-            _context.Add(produto);
-            _context.SaveChanges();
-            return produto;
+            return _produtoRepositorio.Post(produtoViewModel);
         }
 
         [Route("v1/produtos/{id}")]
         [HttpPut]
-        public Produto Put(ProdutoViewModel produtoViewModel)
+        public Produto Put(int id, [FromBody]ProdutoViewModel produtoViewModel)
         {
-            var produto = _context.Produtos.Find(produtoViewModel.Id);
-
-            produto.Id = produtoViewModel.Id;
+            Produto produto = new Produto();
+            produto.Id = id;
             produto.Title = produtoViewModel.Title;
             produto.Descricao = produtoViewModel.Descricao;
             produto.Preco = produtoViewModel.Preco;
@@ -81,31 +54,14 @@ namespace WebAPI.Controllers
             produto.Imagem = produtoViewModel.Imagem;
             produto.CategoriaId = produtoViewModel.CategoriaId;
 
-            _context.Update(produto);
-            _context.SaveChanges();
-
-            return produto;
+            return _produtoRepositorio.Put(produto);
         }
 
         [Route("v1/produtos")]
         [HttpDelete]
-        public Produto Delete(ProdutoViewModel produtoViewModel)
+        public Produto Delete([FromBody]ProdutoViewModel produtoViewModel)
         {
-            var produto = _context.Produtos.Find(produtoViewModel.Id);
-
-            produto.Id = produtoViewModel.Id;
-            produto.Title = produtoViewModel.Title;
-            produto.Descricao = produtoViewModel.Descricao;
-            produto.Preco = produtoViewModel.Preco;
-            produto.Quantidade = produtoViewModel.Quantidade;
-            produto.Imagem = produtoViewModel.Imagem;
-            produto.CategoriaId = produtoViewModel.CategoriaId;
-
-            _context.Produtos.Remove(produto);
-            _context.SaveChanges();
-
-            return produto;
-
+            return _produtoRepositorio.Delete(produtoViewModel);
         }
     }
 }

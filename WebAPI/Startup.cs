@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using WebAPI.Data;
+using WebAPI.Models;
+using WebAPI.Repositorios;
 
 namespace WebAPI
 {
@@ -29,6 +31,7 @@ namespace WebAPI
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddScoped<ApplicationDbContext, ApplicationDbContext>();
+            services.AddTransient<IProdutoRepositorio, ProdutoRepositorio>();
             services.AddMvc();
         }
 
